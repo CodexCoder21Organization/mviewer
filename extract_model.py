@@ -29,14 +29,39 @@ def main(folder):
     omtl = open("%s/master.mtl" % (folder), "w")
     for mat in data["materials"]:
         name = mat["name"]
-        diffuse = mat["albedoTex"]
-        # specular = mat["extrasTex"]
-
-        # write to file
         omtl.write("newmtl {0}\n".format(name))
-        omtl.write("map_Ka {0}\n".format(diffuse))
-        omtl.write("map_Kd {0}\n".format(diffuse))
-        # omtl.write("map_Ks {0}\n\n".format(specular))
+
+        # Albedo / diffuse
+        if "albedoTex" in mat:
+            omtl.write("map_Ka {0}\n".format(mat["albedoTex"]))
+            omtl.write("map_Kd {0}\n".format(mat["albedoTex"]))
+
+        # Reflectivity → specular map
+        if "reflectivityTex" in mat:
+            omtl.write("map_Ks {0}\n".format(mat["reflectivityTex"]))
+
+        # Normal map
+        if "normalTex" in mat:
+            omtl.write("map_Bump {0}\n".format(mat["normalTex"]))
+
+        # Alpha / opacity
+        if "alphaTex" in mat:
+            omtl.write("map_d {0}\n".format(mat["alphaTex"]))
+
+        # Gloss → shininess exponent map
+        if "glossTex" in mat:
+            omtl.write("map_Ns {0}\n".format(mat["glossTex"]))
+
+        # Extras texture (packed AO / emissive sub-textures)
+        if "extrasTex" in mat:
+            omtl.write("# extrasTex {0}\n".format(mat["extrasTex"]))
+            if "extrasTexCoordRanges" in mat:
+                for sub_name, sub_data in mat["extrasTexCoordRanges"].items():
+                    sb = sub_data["scaleBias"]
+                    omtl.write("# {0} scaleBias [{1}, {2}, {3}, {4}]\n".format(
+                        sub_name, sb[0], sb[1], sb[2], sb[3]))
+
+        omtl.write("\n")
 
     omtl.close()
 
